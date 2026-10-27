@@ -1,0 +1,578 @@
+<title>Orbit Index</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@500;600;700&family=Red+Hat+Mono:wght@400;500;600&family=Red+Hat+Text:wght@400;500&display=swap">
+<style>
+/* Layout: watch on a quiet stage at left, a tidy instrument panel of controls at right; stacks on phones. */
+:root {
+  --bg: #e8e9eb;
+  --panel: #f6f7f8;
+  --fg: #16171a;
+  --muted: #5b6069;
+  --line: #d2d5da;
+  --accent: #24272c;
+  --accent-ink: #ffffff;
+  --chip: #eceef1;
+  --f-display: "Red Hat Display", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-body: "Red Hat Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "Red Hat Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d0e10; --panel: #16181b; --fg: #eceef1; --muted: #8e949d;
+    --line: #2a2d33; --accent: #eceef1; --accent-ink: #111214; --chip: #1f2226;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d0e10; --panel: #16181b; --fg: #eceef1; --muted: #8e949d;
+  --line: #2a2d33; --accent: #eceef1; --accent-ink: #111214; --chip: #1f2226;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--fg); }
+body { font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+
+.wrap {
+  max-width: 1080px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 40px;
+  display: flex; flex-direction: column; gap: 24px;
+}
+header h1 {
+  font-family: var(--f-display); font-weight: 700; font-size: 1.75rem;
+  letter-spacing: -0.01em; margin: 0; text-wrap: balance;
+}
+header p { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (min-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr) 380px; } }
+
+.stage { display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: 0; }
+#face {
+  display: block; width: min(100%, 420px); max-width: 100%; aspect-ratio: 440 / 600;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 15%, #000 85%, transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 15%, #000 85%, transparent 100%);
+}
+.readout {
+  font-family: var(--f-mono); font-size: 0.86rem; font-variant-numeric: tabular-nums;
+  color: var(--fg); background: var(--chip); border: 1px solid var(--line);
+  border-radius: 999px; padding: 6px 14px; text-align: center; max-width: 100%;
+}
+.readout b { color: var(--accent); font-weight: 600; }
+.legend { margin: 0; color: var(--muted); font-size: 0.86rem; max-width: 46ch; text-align: center; }
+
+.panel {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  display: flex; flex-direction: column; min-width: 0;
+}
+.group { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.group + .group { border-top: 1px solid var(--line); }
+.label {
+  font-family: var(--f-mono); font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+}
+.label output { color: var(--fg); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.row > * { min-width: 0; }
+
+.seg { display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); }
+.seg button {
+  font: 500 0.85rem var(--f-body); color: var(--muted); background: transparent;
+  border: 0; border-radius: 999px; padding: 5px 12px; cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.seg button:hover:not([aria-pressed="true"]) { color: var(--fg); }
+
+input[type="time"], input[type="date"], input[type="number"] {
+  font: 500 0.92rem var(--f-mono); font-variant-numeric: tabular-nums;
+  color: var(--fg); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 10px; min-width: 0;
+}
+input[type="number"] { width: 7.5em; }
+.field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 140px; }
+.field span { font-size: 0.8rem; color: var(--muted); }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; }
+.check input { accent-color: var(--accent); width: 16px; height: 16px; }
+
+.presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.presets button {
+  font: 500 0.84rem var(--f-body); color: var(--fg); background: var(--chip);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer;
+}
+.presets button:hover { border-color: var(--accent); }
+
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<main class="wrap">
+  <header>
+    <h1>Orbit Index</h1>
+    <p>A working copy of the concentric-ring design. Change the time, date, steps or battery below and watch the face react.</p>
+  </header>
+
+  <div class="grid">
+    <section class="stage" aria-label="Watch preview">
+      <canvas id="face" role="img" aria-label="Watch face showing the current time, date, steps and battery"></canvas>
+      <div class="readout" id="readout">--:--:--</div>
+      <p class="legend">Roman numerals mark the hours and the small numbers under them mark the minutes. The grey rim wedge and wide faint hand show the hour; the white rim bar and slim hand show the minute. The ticks on the seconds circle turn so the current second lands beside the minute pill.</p>
+    </section>
+
+    <section class="panel" aria-label="Watch data controls">
+      <div class="group">
+        <div class="label">Time source</div>
+        <div class="seg" role="group" aria-label="Time source">
+          <button id="srcLive" type="button" aria-pressed="true">Live clock</button>
+          <button id="srcManual" type="button" aria-pressed="false">Manual</button>
+        </div>
+        <div class="row">
+          <label class="field"><span>Time</span><input id="timeIn" type="time" step="1"></label>
+          <label class="field"><span>Date</span><input id="dateIn" type="date"></label>
+        </div>
+        <div class="row">
+          <div class="seg" role="group" aria-label="Playback speed" id="speedSeg">
+            <button type="button" data-speed="1" aria-pressed="true">1×</button>
+            <button type="button" data-speed="10" aria-pressed="false">10×</button>
+            <button type="button" data-speed="60" aria-pressed="false">60×</button>
+            <button type="button" data-speed="600" aria-pressed="false">600×</button>
+          </div>
+          <div class="seg" role="group" aria-label="Hour format">
+            <button id="fmt24" type="button" aria-pressed="true">24h</button>
+            <button id="fmt12" type="button" aria-pressed="false">12h</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="label"><span>Steps</span><output id="stepsOut">8,432</output></div>
+        <input id="stepsRange" type="range" min="0" max="30000" step="1" value="8432" aria-label="Steps">
+        <div class="row">
+          <label class="field"><span>Steps today</span><input id="stepsNum" type="number" min="0" max="99999" value="8432"></label>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="label"><span>Battery</span><output id="battOut">78%</output></div>
+        <input id="battRange" type="range" min="0" max="100" step="1" value="78" aria-label="Battery level">
+        <label class="check"><input id="chargeChk" type="checkbox"> Charging</label>
+      </div>
+
+      <div class="group">
+        <div class="label">Try a scenario</div>
+        <div class="presets">
+          <button type="button" id="pMidnight">Midnight rollover</button>
+          <button type="button" id="pHour">Watch an hour pass</button>
+          <button type="button" id="pLow">Low battery</button>
+          <button type="button" id="pCharge">Charging</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const canvas = $("face");
+  const ctx = canvas.getContext("2d");
+  const W = 440, H = 600, CX = 220, CY = 300;
+  const DEG = Math.PI / 180;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Watch palette: the hardware is always dark, independent of page theme.
+  const C = {
+    orange: "#ff6b1f", orangeDeep: "#c9470a",
+    dial: "#060607", bezel: "#141517",
+    ringMinute: "#b9bdc4", ringSecond: "#7c818a", tick: "#34373d",
+    white: "#f4f5f7", track: "#1d1f23", low: "#ff4d4d", charge: "#4ade80",
+  };
+  const FONT_D = '"Red Hat Display", system-ui, sans-serif';
+  const FONT_M = '"Red Hat Mono", ui-monospace, monospace';
+
+  const state = {
+    mode: "live", base: Date.now(), anchor: performance.now(), speed: 1,
+    h24: true, steps: 8432, goal: 10000, battery: 78, charging: false,
+  };
+
+  const nowMs = () =>
+    state.mode === "live" ? Date.now() : state.base + (performance.now() - state.anchor) * state.speed;
+
+  function targetRot(ms) {
+    const d = new Date(ms);
+    const s = d.getSeconds() + d.getMilliseconds() / 1000;
+    const m = d.getMinutes() + s / 60;
+    return { m: m * 6, s: s * 6 };
+  }
+  const wrap180 = (a) => ((((a + 180) % 360) + 360) % 360) - 180;
+
+  // Offsets let the rings glide to a new time instead of snapping.
+  let offM = 0, offS = 0;
+  function jumpTo(change) {
+    const before = targetRot(nowMs());
+    change();
+    const after = targetRot(nowMs());
+    if (reduceMotion) { offM = offS = 0; return; }
+    offM = wrap180(before.m + offM - after.m);
+    offS = wrap180(before.s + offS - after.s);
+  }
+
+  // ---------- canvas sizing ----------
+  let scale = 1;
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const cssW = canvas.clientWidth || 420;
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssW * (H / W) * dpr);
+    scale = canvas.width / W;
+  }
+  new ResizeObserver(resize).observe(canvas);
+  resize();
+
+  // ---------- drawing helpers ----------
+  function disc(r, fill) { ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fillStyle = fill; ctx.fill(); }
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  const mix = (a, b, t) => {
+    const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+    const ch = (s) => Math.round(((pa >> s) & 255) * (1 - t) + ((pb >> s) & 255) * t);
+    return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+  };
+  const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+  const setSpacing = (v) => { if ("letterSpacing" in ctx) ctx.letterSpacing = v; };
+
+  // Rolling digits for hour and minute pill.
+  const rolls = { hour: { v: null, prev: null, at: 0 }, min: { v: null, prev: null, at: 0 } };
+  function rollText(roll, cur, x, y, h, t) {
+    if (roll.v !== cur) { roll.prev = roll.v; roll.v = cur; roll.at = t; }
+    let p = 1;
+    if (roll.prev != null && !reduceMotion && state.speed <= 60) p = easeOut(Math.min(1, (t - roll.at) / 380));
+    if (p < 1) { ctx.globalAlpha = 1 - p; ctx.fillText(roll.prev, x, y - p * h); }
+    ctx.globalAlpha = p; ctx.fillText(cur, x, y + (1 - p) * h);
+    ctx.globalAlpha = 1;
+  }
+
+  // Monochrome face: greys for structure, bright white only for what you read.
+  const M = {
+    hi: "#ffffff", text: "#c9ccd2", mid: "#8e939b", dim: "#61666e",
+    tick: "#3a3d43", tickMajor: "#555a61", dial: "#050506", rail: "#17181b",
+  };
+
+  function drawStrap() {
+    for (const dir of [-1, 1]) {
+      const y0 = dir < 0 ? -300 : 150, h = 150;
+      const g = ctx.createLinearGradient(-104, 0, 104, 0);
+      g.addColorStop(0, "#26282c"); g.addColorStop(0.5, "#3a3d42"); g.addColorStop(1, "#24262a");
+      roundRect(-104, y0, 208, h, 14); ctx.fillStyle = g; ctx.fill();
+    }
+  }
+
+  function drawCase() {
+    const cg = ctx.createLinearGradient(0, -20, 0, 20);
+    cg.addColorStop(0, "#b4b9c0"); cg.addColorStop(1, "#5a5e65");
+    roundRect(200, -20, 24, 40, 10); ctx.fillStyle = cg; ctx.fill();
+
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,.5)"; ctx.shadowBlur = 34; ctx.shadowOffsetY = 14;
+    disc(214, "#2b2d31");
+    ctx.restore();
+    const mg = ctx.createLinearGradient(-214, -214, 214, 214);
+    mg.addColorStop(0, "#c3c7cd"); mg.addColorStop(0.45, "#6a6e75"); mg.addColorStop(0.7, "#3c3f44"); mg.addColorStop(1, "#9ca1a8");
+    disc(214, mg);
+    disc(209, "#000");
+    disc(207, "#000");
+  }
+
+
+  function baseTicks(R){
+    ctx.strokeStyle = M.tick; ctx.lineWidth = 1.2;
+    for (let i = 0; i < 60; i++) {
+      if (i % 5 === 0) continue;
+      const a = (i * 6 - 90) * DEG, ca = Math.cos(a), sa = Math.sin(a);
+      ctx.beginPath(); ctx.moveTo(ca * (R - 4), sa * (R - 4)); ctx.lineTo(ca * (R + 4), sa * (R + 4)); ctx.stroke();
+    }
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  }
+  function minuteLabels(R, hl){
+    for (let v = 0; v < 60; v += 5) {
+      const a = (v * 6 - 90) * DEG;
+      const on = hl === v;
+      ctx.font = on ? `700 20px ${FONT_D}` : `600 18px ${FONT_D}`; ctx.fillStyle = on ? M.hi : M.mid;
+      ctx.fillText(String(v).padStart(2, "0"), Math.cos(a) * R, Math.sin(a) * R + 1);
+    }
+  }
+  function hourBars(){
+    ctx.strokeStyle = M.text; ctx.lineWidth = 3; ctx.lineCap = "round";
+    for (let i = 0; i < 12; i++) { const a = (i * 30 - 90) * DEG;
+      ctx.beginPath(); ctx.moveTo(Math.cos(a) * 196, Math.sin(a) * 196); ctx.lineTo(Math.cos(a) * 203, Math.sin(a) * 203); ctx.stroke(); }
+    ctx.lineCap = "butt";
+  }
+  function drawMinuteDial(d){ baseTicks(186);
+    const ROM = ["XII","I","II","III","IV","V","VI","VII","VIII","IX","X","XI"];
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = `600 19px ${FONT_D}`; ctx.fillStyle = M.text;
+    for (let i = 0; i < 12; i++) { const a = (i * 30 - 90) * DEG;
+      ctx.fillText(ROM[i], Math.cos(a) * 187, Math.sin(a) * 187 + 1); }
+    ctx.font = `600 12px ${FONT_D}`; ctx.fillStyle = M.mid;
+    for (let i = 0; i < 12; i++) { if (i === 3) continue; const a = (i * 30 - 90) * DEG;
+      ctx.fillText(String(i * 5).padStart(2, "0"), Math.cos(a) * 163, Math.sin(a) * 163 + 1); } }
+
+  // Analog read: faint hands behind the digits, plus markers on the rim.
+  function drawAnalogPointers(d) {
+    const s = d.getSeconds() + d.getMilliseconds() / 1000;
+    const m = d.getMinutes() + s / 60;
+    const h = (d.getHours() % 12) + m / 60;
+    ctx.lineWidth = 1; ctx.strokeStyle = M.rail;
+    ctx.beginPath(); ctx.arc(0, 0, 200, 0, Math.PI * 2); ctx.stroke();
+
+    ctx.lineCap = "round";
+    ctx.save(); ctx.rotate(h * 30 * DEG);
+    ctx.globalAlpha = 0.24; ctx.strokeStyle = M.hi; ctx.lineWidth = 10;
+    ctx.beginPath(); ctx.moveTo(0, 14); ctx.lineTo(0, -108); ctx.stroke();
+    ctx.restore();
+    ctx.save(); ctx.rotate(m * 6 * DEG);
+    ctx.globalAlpha = 0.16; ctx.strokeStyle = M.hi; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(0, 18); ctx.lineTo(0, -158); ctx.stroke();
+    ctx.restore();
+    ctx.globalAlpha = 1;
+
+    // hour: broad grey wedge on the rim
+    ctx.save(); ctx.rotate(h * 30 * DEG);
+    ctx.beginPath(); ctx.moveTo(-8, -207); ctx.lineTo(8, -207); ctx.lineTo(3, -194); ctx.lineTo(-3, -194); ctx.closePath();
+    ctx.fillStyle = M.mid; ctx.fill();
+    ctx.restore();
+    // minute: slim bright bar on the rim
+    ctx.save(); ctx.rotate(m * 6 * DEG);
+    roundRect(-2, -207, 4, 13, 2); ctx.fillStyle = M.hi; ctx.fill();
+    ctx.restore();
+  }
+
+  // Rotating seconds ring: the current second lands at 3 o'clock, right of the minute pill.
+  function drawSecondsRing(rot, sec) {
+    const hide = 15, RL = 146;
+    for (let i = 0; i < 60; i++) {
+      const deg = wrap180(rot - i * 6);
+      if (Math.abs(deg) < hide) continue;
+      const a = deg * DEG, ca = Math.cos(a), sa = Math.sin(a), major = i % 5 === 0;
+      ctx.beginPath();
+      ctx.moveTo(ca * (major ? 139 : 142), sa * (major ? 139 : 142)); ctx.lineTo(ca * (major ? 151 : 149), sa * (major ? 151 : 149));
+      ctx.lineWidth = major ? 1.6 : 1; ctx.strokeStyle = major ? M.tickMajor : M.tick; ctx.stroke();
+    }
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = `500 15px ${FONT_D}`;
+    for (let v = 0; v < 60; v += 5) {
+      const deg = wrap180(rot - v * 6), ad = Math.abs(deg);
+      if (ad < hide) continue;
+      ctx.globalAlpha = Math.min(1, (ad - hide) / 10);
+      continue;
+    }
+    ctx.globalAlpha = 1;
+    ctx.font = `700 26px ${FONT_D}`; ctx.fillStyle = M.hi;
+    ctx.fillText(String(sec).padStart(2, "0"), RL, 1);
+  }
+
+  function drawFootIcon(x, y) {
+    ctx.fillStyle = M.text;
+    ctx.beginPath(); ctx.ellipse(x - 3.5, y + 2, 3, 5, -0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + 3.5, y - 2, 3, 5, 0.2, 0, Math.PI * 2); ctx.fill();
+  }
+  function drawBatteryIcon(x, y, level) {
+    ctx.lineWidth = 1.6; ctx.strokeStyle = M.mid;
+    roundRect(x - 12, y - 7, 22, 14, 3); ctx.stroke();
+    ctx.fillStyle = M.mid; ctx.fillRect(x + 10.5, y - 3, 2.5, 6);
+    ctx.fillStyle = M.hi; roundRect(x - 10, y - 5, Math.max(1.5, 18 * level / 100), 10, 1.5); ctx.fill();
+    if (state.charging) {
+      ctx.fillStyle = M.dial; ctx.strokeStyle = M.hi; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x + 1, y - 6.5); ctx.lineTo(x - 4.5, y + 1); ctx.lineTo(x - 0.5, y + 1);
+      ctx.lineTo(x - 2, y + 6.5); ctx.lineTo(x + 4, y - 1.2); ctx.lineTo(x, y - 1.2); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+    }
+  }
+
+  const DOW = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+  const MON_T = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  function drawFace(ms, t) {
+    const d = new Date(ms);
+    const rotS = targetRot(ms).s + offS;
+
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.translate(CX, CY);
+
+    drawStrap();
+    drawCase();
+    drawMinuteDial(d);
+    drawAnalogPointers(d);
+    drawSecondsRing(rotS, d.getSeconds());
+
+    // minute pill at 3 o'clock
+    roundRect(46, -23, 72, 46, 23);
+    ctx.fillStyle = M.dial; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = M.hi; ctx.stroke();
+    ctx.save();
+    roundRect(46, -23, 72, 46, 23); ctx.clip();
+    ctx.font = `700 30px ${FONT_D}`; ctx.fillStyle = M.hi;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    rollText(rolls.min, String(d.getMinutes()).padStart(2, "0"), 82, 1, 36, t);
+    ctx.restore();
+
+    // hour, always two digits, centred
+    const h = d.getHours();
+    const hourStr = String(state.h24 ? h : (h % 12 || 12)).padStart(2, "0");
+    ctx.save();
+    ctx.beginPath(); ctx.rect(-74, -50, 118, 100); ctx.clip();
+    ctx.font = `700 84px ${FONT_D}`; ctx.fillStyle = M.hi;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    rollText(rolls.hour, hourStr, -12, 4, 80, t);
+    ctx.restore();
+
+    // date block on the left: date / weekday / year
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    setSpacing("0.5px");
+    ctx.font = `600 17px ${FONT_M}`; ctx.fillStyle = M.mid;
+    ctx.fillText(`${String(d.getDate()).padStart(2, "0")} ${MON_T[d.getMonth()]}`, -108, -25);
+    ctx.fillText(String(d.getFullYear()), -108, 27);
+    setSpacing("1px");
+    ctx.font = `700 24px ${FONT_D}`; ctx.fillStyle = M.hi;
+    ctx.fillText(DOW[d.getDay()], -108, 1);
+
+    if (!state.h24) {
+      setSpacing("1px");
+      ctx.font = `600 15px ${FONT_M}`; ctx.fillStyle = M.mid;
+      ctx.fillText(h < 12 ? "AM" : "PM", -12, 46);
+    }
+
+    // steps + battery row
+    ctx.textAlign = "left";
+    setSpacing("0.5px");
+    ctx.font = `600 18px ${FONT_M}`;
+    const stepsTxt = state.steps.toLocaleString("en-US");
+    const battTxt = `${Math.round(state.battery)}%`;
+    const wS = ctx.measureText(stepsTxt).width, wB = ctx.measureText(battTxt).width;
+    const total = 14 + 7 + wS + 24 + 26 + 7 + wB;
+    let x = -total / 2;
+    const y = 80;
+    drawFootIcon(x + 7, y);
+    ctx.fillStyle = M.hi; ctx.fillText(stepsTxt, x + 21, y + 1);
+    x += 21 + wS + 24;
+    drawBatteryIcon(x + 12, y, state.battery);
+    ctx.fillStyle = M.hi; ctx.fillText(battTxt, x + 33, y + 1);
+    setSpacing("0px");
+  }
+
+  // ---------- UI wiring ----------
+  const pad = (n) => String(n).padStart(2, "0");
+  const timeStr = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const dateStr = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+  function syncSourceUI() {
+    $("srcLive").setAttribute("aria-pressed", String(state.mode === "live"));
+    $("srcManual").setAttribute("aria-pressed", String(state.mode === "manual"));
+    document.querySelectorAll("#speedSeg button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(Number(b.dataset.speed) === state.speed)));
+  }
+
+  function setManualTime(ms, speed = state.speed) {
+    jumpTo(() => {
+      state.mode = "manual"; state.base = ms; state.anchor = performance.now(); state.speed = speed;
+    });
+    syncSourceUI();
+  }
+
+  function fromInputs() {
+    const dv = $("dateIn").value, tv = $("timeIn").value;
+    if (!dv || !tv) return;
+    const [y, mo, da] = dv.split("-").map(Number);
+    const [hh, mm, ss = 0] = tv.split(":").map(Number);
+    const ms = new Date(y, mo - 1, da, hh, mm, ss).getTime();
+    if (!Number.isNaN(ms)) setManualTime(ms);
+  }
+  $("timeIn").addEventListener("input", fromInputs);
+  $("dateIn").addEventListener("input", fromInputs);
+
+  $("srcLive").addEventListener("click", () => {
+    jumpTo(() => { state.mode = "live"; state.speed = 1; });
+    syncSourceUI();
+  });
+  $("srcManual").addEventListener("click", () => {
+    if (state.mode === "manual") return;
+    state.base = Date.now(); state.anchor = performance.now(); state.mode = "manual";
+    syncSourceUI();
+  });
+  document.querySelectorAll("#speedSeg button").forEach((b) => b.addEventListener("click", () => {
+    const s = Number(b.dataset.speed);
+    state.base = nowMs(); state.anchor = performance.now(); state.speed = s;
+    if (s !== 1) state.mode = "manual";
+    syncSourceUI();
+  }));
+
+  $("fmt24").addEventListener("click", () => { state.h24 = true; syncFmt(); });
+  $("fmt12").addEventListener("click", () => { state.h24 = false; syncFmt(); });
+  function syncFmt() {
+    $("fmt24").setAttribute("aria-pressed", String(state.h24));
+    $("fmt12").setAttribute("aria-pressed", String(!state.h24));
+  }
+
+  function setSteps(v) {
+    state.steps = Math.max(0, Math.min(99999, Math.round(Number(v) || 0)));
+    $("stepsRange").value = Math.min(30000, state.steps);
+    if (document.activeElement !== $("stepsNum")) $("stepsNum").value = state.steps;
+    $("stepsOut").textContent = state.steps.toLocaleString("en-US");
+  }
+  $("stepsRange").addEventListener("input", (e) => setSteps(e.target.value));
+  $("stepsNum").addEventListener("input", (e) => setSteps(e.target.value));
+
+  function setBattery(v, charging = state.charging) {
+    state.battery = Math.max(0, Math.min(100, Number(v) || 0));
+    state.charging = charging;
+    $("battRange").value = state.battery;
+    $("chargeChk").checked = charging;
+    $("battOut").textContent = `${Math.round(state.battery)}%` + (charging ? " · charging" : "");
+  }
+  $("battRange").addEventListener("input", (e) => setBattery(e.target.value));
+  $("chargeChk").addEventListener("change", (e) => setBattery(state.battery, e.target.checked));
+
+  // scenarios
+  const today = () => { const d = new Date(nowMs()); return [d.getFullYear(), d.getMonth(), d.getDate()]; };
+  $("pMidnight").addEventListener("click", () => { const [y, m, d] = today(); setManualTime(new Date(y, m, d, 23, 59, 45).getTime(), 1); });
+  $("pHour").addEventListener("click", () => { const [y, m, d] = today(); setManualTime(new Date(y, m, d, 9, 58, 30).getTime(), 60); });
+  $("pLow").addEventListener("click", () => setBattery(12, false));
+  $("pCharge").addEventListener("click", () => setBattery(46, true));
+
+  // ---------- loop ----------
+  let lastT = performance.now(), lastSync = 0;
+  function frame(t) {
+    const dt = Math.min(0.1, (t - lastT) / 1000); lastT = t;
+    const k = Math.exp(-dt / 0.14);
+    offM *= k; offS *= k;
+    if (Math.abs(offM) < 0.01) offM = 0;
+    if (Math.abs(offS) < 0.01) offS = 0;
+
+    const ms = nowMs();
+    drawFace(ms, t);
+
+    if (t - lastSync > 200) {
+      lastSync = t;
+      const d = new Date(ms);
+      if (document.activeElement !== $("timeIn")) $("timeIn").value = timeStr(d);
+      if (document.activeElement !== $("dateIn")) $("dateIn").value = dateStr(d);
+      const when = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+      const tag = state.mode === "live" ? "Live" : `Manual · ${state.speed}×`;
+      $("readout").innerHTML = `<b>${timeStr(d)}</b> · ${when} · ${tag}`;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  setSteps(state.steps); setBattery(state.battery, false); syncSourceUI(); syncFmt();
+  requestAnimationFrame(frame);
+})();
+</script>
